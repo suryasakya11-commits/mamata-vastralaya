@@ -648,6 +648,32 @@ button { cursor: pointer; }
   font-size: 12px;
   font-weight: 700;
 }
+
+/* Full admin dashboard */
+.admin-dashboard{display:none;position:fixed;inset:0;z-index:500;background:#f7f4ef;overflow:auto;color:#291c1b}
+.admin-dashboard.show{display:block}
+.admin-top{background:#291c1b;color:#fff;padding:17px 4%;display:flex;align-items:center;justify-content:space-between;gap:15px;position:sticky;top:0;z-index:2}
+.admin-top h2{font:24px 'Playfair Display',serif;color:#e0bd85}
+.admin-top p{font-size:11px;color:#ddd;margin-top:3px}
+.admin-close{border:1px solid #ffffff55;background:transparent;color:#fff;padding:9px 13px;border-radius:4px}
+.admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 70px)}
+.admin-sidebar{background:#fff;border-right:1px solid #eee7dd;padding:22px 14px}
+.admin-nav{width:100%;display:block;text-align:left;border:0;background:transparent;padding:13px 14px;margin-bottom:5px;border-radius:5px;color:#655b56;font-weight:600;font-size:13px}
+.admin-nav.active,.admin-nav:hover{background:#f5eceb;color:#702b36}
+.admin-main{padding:28px;min-width:0}
+.admin-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px;flex-wrap:wrap}
+.admin-heading h1{font:30px 'Playfair Display',serif}
+.admin-muted{font-size:12px;color:#817873;margin-top:5px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:25px}
+.admin-stat,.admin-card{background:#fff;border:1px solid #eee7dd;border-radius:7px;padding:20px}
+.admin-stat span{font-size:11px;color:#817873}.admin-stat strong{display:block;font-size:27px;color:#702b36;margin-top:8px}
+.admin-card h3{font-size:15px;margin-bottom:15px}
+.admin-primary,.admin-secondary,.admin-danger{border:0;padding:11px 16px;border-radius:4px;font-size:12px;font-weight:700}
+.admin-primary{background:#702b36;color:#fff}.admin-secondary{background:#f4eee7;color:#702b36}.admin-danger{background:#fff0ef;color:#a52d27}
+.admin-table-wrap{overflow:auto}.admin-table{width:100%;border-collapse:collapse;min-width:650px;font-size:12px}.admin-table th,.admin-table td{text-align:left;padding:12px 10px;border-bottom:1px solid #eee7dd}.admin-table th{color:#817873;font-weight:600;background:#fcfaf7}.admin-thumb{width:42px;height:48px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:9px}
+.admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.admin-field label{display:block;font-size:11px;font-weight:700;margin-bottom:6px}.admin-field input,.admin-field select,.admin-field textarea{width:100%;border:1px solid #e5d9ca;border-radius:4px;padding:11px;background:#fff;outline-color:#bd9456;font-size:12px}.admin-field textarea{min-height:75px;resize:vertical}.admin-field.full{grid-column:1/-1}.admin-form-actions{display:flex;gap:9px;margin-top:17px;flex-wrap:wrap}.admin-status{font-size:12px;color:#702b36;margin-top:10px;min-height:18px}.admin-empty{text-align:center;padding:30px;color:#817873;font-size:13px}
+@media(max-width:700px){.admin-layout{grid-template-columns:1fr}.admin-sidebar{display:flex;gap:5px;overflow:auto;padding:9px}.admin-nav{white-space:nowrap;width:auto;margin:0;padding:10px}.admin-main{padding:16px}.admin-stats{grid-template-columns:1fr}.admin-form-grid{grid-template-columns:1fr}.admin-field.full{grid-column:auto}}
+
 @media(max-width:650px) {
   .admin-login-button { padding: 9px 10px; font-size: 10px; }
 }
@@ -878,7 +904,52 @@ button { cursor: pointer; }
 <div class="admin-account-panel" id="adminAccountPanel">
   <strong>Owner account signed in</strong>
   <p id="adminAccountEmail"></p>
-  <button class="admin-signout-button" id="adminSignOutButton" type="button">Sign out</button>
+
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="admin-dashboard" id="adminDashboard">
+  <div class="admin-top"><div><h2>Mamata Vastralaya</h2><p>Store administration</p></div><div style="display:flex;gap:8px;align-items:center"><button class="admin-close" id="adminSignOutButton" type="button">Sign out</button><button class="admin-close" id="adminDashboardClose" type="button">← Back to Store</button></div></div>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <button class="admin-nav active" data-admin-view="overview">▦ &nbsp; Overview</button>
+      <button class="admin-nav" data-admin-view="products">▣ &nbsp; Products</button>
+      <button class="admin-nav" data-admin-view="add">＋ &nbsp; Add Product</button>
+    </aside>
+    <main class="admin-main">
+      <section id="adminOverview">
+        <div class="admin-heading"><div><h1>Dashboard</h1><p class="admin-muted">Welcome to your store control centre.</p></div></div>
+        <div class="admin-stats"><div class="admin-stat"><span>Total Products</span><strong id="adminTotalProducts">0</strong></div><div class="admin-stat"><span>Featured Products</span><strong id="adminFeaturedProducts">0</strong></div><div class="admin-stat"><span>Categories</span><strong id="adminCategoryCount">0</strong></div></div>
+        <div class="admin-card"><h3>Quick actions</h3><button class="admin-primary" type="button" data-admin-go="add">＋ Add New Product</button> <button class="admin-secondary" type="button" data-admin-go="products">Manage Products</button></div>
+      </section>
+      <section id="adminProductsView" hidden>
+        <div class="admin-heading"><div><h1>Products</h1><p class="admin-muted">Manage the products shown on your website.</p></div><button class="admin-primary" type="button" data-admin-go="add">＋ Add Product</button></div>
+        <div class="admin-card"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="adminProductRows"></tbody></table></div><div class="admin-status" id="adminProductsStatus"></div></div>
+      </section>
+      <section id="adminAddView" hidden>
+        <div class="admin-heading"><div><h1 id="adminFormTitle">Add Product</h1><p class="admin-muted">Fill in the product details below.</p></div></div>
+        <div class="admin-card">
+          <form id="adminProductForm">
+            <input type="hidden" id="adminProductId">
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="adminName">Product name *</label><input id="adminName" required maxlength="90" placeholder="e.g. Printed Designer Kurti"></div>
+              <div class="admin-field"><label for="adminCategory">Category *</label><select id="adminCategory" required><option value="Sarees">Sarees</option><option value="Kurtis">Kurtis</option><option value="Suits">Suits</option><option value="Menswear">Menswear</option></select></div>
+              <div class="admin-field"><label for="adminPrice">Selling price (₹) *</label><input id="adminPrice" type="number" min="0" required></div>
+              <div class="admin-field"><label for="adminOldPrice">Original price (₹)</label><input id="adminOldPrice" type="number" min="0"></div>
+              <div class="admin-field"><label for="adminTag">Product label</label><input id="adminTag" maxlength="30" placeholder="NEW ARRIVAL"></div>
+              <div class="admin-field"><label for="adminImage">Product image URL *</label><input id="adminImage" type="url" required placeholder="https://..."></div>
+              <div class="admin-field"><label for="adminSizes">Sizes (comma separated) *</label><input id="adminSizes" required placeholder="S, M, L, XL"></div>
+              <div class="admin-field"><label for="adminColors">Colors (comma separated) *</label><input id="adminColors" required placeholder="Red, Blue, Black"></div>
+              <div class="admin-field full"><label for="adminDescription">Description</label><textarea id="adminDescription" placeholder="Product details..."></textarea></div>
+              <div class="admin-field full"><label><input id="adminFeatured" type="checkbox" style="width:auto;vertical-align:middle"> &nbsp; Show as featured product</label></div>
+            </div>
+            <div class="admin-form-actions"><button class="admin-primary" id="adminSaveProduct" type="submit">Save Product</button><button class="admin-secondary" type="button" id="adminCancelEdit">Cancel</button></div>
+            <div class="admin-status" id="adminFormStatus" aria-live="polite"></div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
 </div>
 
 <!-- PRODUCT DETAILS -->
@@ -914,7 +985,7 @@ button { cursor: pointer; }
 // Enter country code + number, without + or spaces.
 const WHATSAPP_NUMBER = "919335565456";
 
-const products = [
+let products = [
   {
     id: 1,
     name: "Printed Designer Kurti",
@@ -1060,11 +1131,19 @@ function renderProducts() {
           ₹${product.price}
           <small>₹${product.oldPrice}</small>
         </div>
-        <button class="view-btn" type="button" onclick="openProduct(${product.id})">VIEW DETAILS →</button>
+        <button class="view-btn" type="button" data-product-id="${String(product.id)}">VIEW DETAILS →</button>
       </div>
     </article>
   `).join("");
 }
+
+// Handle clicks on dynamically rendered VIEW DETAILS buttons.
+grid.addEventListener("click", function(event) {
+  const button = event.target.closest(".view-btn");
+  if (!button || !grid.contains(button)) return;
+  event.preventDefault();
+  openProduct(button.dataset.productId);
+});
 
 function selectCategory(category) {
   activeCategory = category;
@@ -1085,7 +1164,7 @@ document.getElementById("searchInput").addEventListener("input", renderProducts)
 document.getElementById("sortSelect").addEventListener("change", renderProducts);
 
 function openProduct(id) {
-  selectedProduct = products.find(p => p.id === id);
+  selectedProduct = products.find(p => String(p.id) === String(id));
   selectedSize = "";
   selectedColor = "";
 
@@ -1158,13 +1237,8 @@ renderProducts();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC4cLEhojC6jiJGlT6XxTKvYG0el_IVdiM",
@@ -1175,75 +1249,151 @@ renderProducts();
     appId: "1:550076056064:web:e061d70875db5b8dd10ee5",
     measurementId: "G-QGKVG4W202"
   };
-
-  // UI allowlist only. Firestore Security Rules must also enforce this owner email.
   const OWNER_EMAIL = "suryasakya11@gmail.com";
-
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
-  const overlay = document.getElementById("adminAuthOverlay");
-  const message = document.getElementById("adminAuthMessage");
-  const loginButton = document.getElementById("googleLoginButton");
-  const panel = document.getElementById("adminAccountPanel");
-  const accountEmail = document.getElementById("adminAccountEmail");
+  const $ = id => document.getElementById(id);
+  const overlay = $('adminAuthOverlay'), message = $('adminAuthMessage');
+  const loginButton = $('googleLoginButton'), panel = $('adminAccountPanel');
+  const dashboard = $('adminDashboard');
+  let editingProductId = null;
 
-  document.getElementById("adminLoginButton").addEventListener("click", () => {
-    if (auth.currentUser && auth.currentUser.email === OWNER_EMAIL) {
-      panel.classList.add("show");
-    } else {
-      message.textContent = "";
-      overlay.classList.add("show");
-    }
+  function isOwner(user = auth.currentUser) {
+    return !!user && (user.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase();
+  }
+  async function openDashboard() {
+    if (!isOwner()) return;
+    panel.classList.remove('show');
+    dashboard.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    try { await loadProductsFromFirebase(true); } catch (error) { console.error(error); $('adminProductsStatus').textContent = error.message || 'Could not load products. Check Firestore rules.'; }
+    refreshAdmin();
+  }
+  function closeDashboard() {
+    dashboard.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  $('adminLoginButton').addEventListener('click', () => {
+    if (isOwner()) openDashboard();
+    else { message.textContent = ''; overlay.classList.add('show'); }
   });
+  $('adminAuthClose').addEventListener('click', () => overlay.classList.remove('show'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+  $('adminDashboardClose').addEventListener('click', closeDashboard);
 
-  document.getElementById("adminAuthClose").addEventListener("click", () => {
-    overlay.classList.remove("show");
-  });
-
-  overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) overlay.classList.remove("show");
-  });
-
-  loginButton.addEventListener("click", async () => {
-    message.textContent = "Opening Google sign-in...";
-    loginButton.disabled = true;
+  loginButton.addEventListener('click', async () => {
+    message.textContent = 'Opening Google sign-in...'; loginButton.disabled = true;
     try {
       const result = await signInWithPopup(auth, provider);
-      const email = (result.user.email || "").toLowerCase();
-
-      if (email !== OWNER_EMAIL.toLowerCase()) {
-        await signOut(auth);
-        message.textContent = "This Google account is not authorized for Owner access.";
-        return;
+      if ((result.user.email || '').toLowerCase() !== OWNER_EMAIL.toLowerCase()) {
+        await signOut(auth); message.textContent = 'This Google account is not authorized for Owner access.'; return;
       }
-
-      overlay.classList.remove("show");
-      panel.classList.add("show");
-      accountEmail.textContent = result.user.email;
+      overlay.classList.remove('show'); openDashboard();
     } catch (error) {
-      console.error("Google sign-in error:", error);
-      message.textContent = error.message || "Google sign-in failed. Please try again.";
-    } finally {
-      loginButton.disabled = false;
-    }
+      console.error('Google sign-in error:', error);
+      message.textContent = error.message || 'Google sign-in failed. Please try again.';
+    } finally { loginButton.disabled = false; }
+  });
+  $('adminSignOutButton').addEventListener('click', async () => {
+    await signOut(auth); panel.classList.remove('show'); closeDashboard();
+  });
+  onAuthStateChanged(auth, user => {
+    if (isOwner(user)) {
+      $('adminAccountEmail').textContent = user.email;
+      // Keep the account panel as a fallback entry point; dashboard opens from Admin Login.
+      panel.classList.remove('show');
+    } else { panel.classList.remove('show'); closeDashboard(); }
   });
 
-  document.getElementById("adminSignOutButton").addEventListener("click", async () => {
-    await signOut(auth);
-    panel.classList.remove("show");
+  async function loadProductsFromFirebase(seedIfEmpty = false) {
+    const snap = await getDocs(collection(db, 'products'));
+    if (snap.empty && seedIfEmpty) {
+      // Import the eight demo products only when the owner first opens the dashboard.
+      for (const item of products) {
+        const seed = { ...item, featured: ['BESTSELLER','POPULAR','NEW ARRIVAL'].includes(item.tag) };
+        await setDoc(doc(db, 'products', String(item.id)), seed);
+      }
+      return loadProductsFromFirebase(false);
+    }
+    if (snap.empty) return;
+    products = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    if (typeof renderProducts === 'function') renderProducts();
+  }
+  loadProductsFromFirebase().catch(error => {
+    console.error('Products load failed:', error);
+    $('adminProductsStatus').textContent = 'Could not load Firestore products. Check your Firestore rules and database setup.';
   });
 
-  onAuthStateChanged(auth, (user) => {
-    if (user && (user.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()) {
-      accountEmail.textContent = user.email;
-      panel.classList.add("show");
-    } else {
-      panel.classList.remove("show");
-    }
+  function showAdminView(view) {
+    $('adminOverview').hidden = view !== 'overview';
+    $('adminProductsView').hidden = view !== 'products';
+    $('adminAddView').hidden = view !== 'add';
+    document.querySelectorAll('.admin-nav').forEach(b => b.classList.toggle('active', b.dataset.adminView === view));
+    if (view === 'products') renderAdminProducts();
+    if (view === 'overview') updateStats();
+  }
+  document.querySelectorAll('[data-admin-view]').forEach(b => b.addEventListener('click', () => showAdminView(b.dataset.adminView)));
+  document.querySelectorAll('[data-admin-go]').forEach(b => b.addEventListener('click', () => { resetProductForm(); showAdminView(b.dataset.adminGo); }));
+  function updateStats() {
+    $('adminTotalProducts').textContent = products.length;
+    $('adminFeaturedProducts').textContent = products.filter(p => p.featured).length;
+    $('adminCategoryCount').textContent = new Set(products.map(p => p.category)).size;
+  }
+  function refreshAdmin() { updateStats(); renderAdminProducts(); showAdminView('overview'); }
+  function renderAdminProducts() {
+    const body = $('adminProductRows');
+    if (!products.length) { body.innerHTML = '<tr><td colspan="5" class="admin-empty">No products added yet.</td></tr>'; return; }
+    body.innerHTML = products.map(p => `<tr><td><img class="admin-thumb" src="${escapeHtml(p.image || '')}" alt=""><strong>${escapeHtml(p.name || '')}</strong></td><td>${escapeHtml(p.category || '')}</td><td>₹${Number(p.price || 0)}</td><td>${p.featured ? 'Yes' : 'No'}</td><td><button class="admin-secondary" data-edit="${escapeHtml(p.id)}">Edit</button> <button class="admin-danger" data-delete="${escapeHtml(p.id)}">Delete</button></td></tr>`).join('');
+    body.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => editProduct(b.dataset.edit)));
+    body.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => removeProduct(b.dataset.delete)));
+  }
+  function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function resetProductForm() {
+    $('adminProductForm').reset(); $('adminProductId').value = ''; editingProductId = null;
+    $('adminFormTitle').textContent = 'Add Product'; $('adminSaveProduct').textContent = 'Save Product'; $('adminFormStatus').textContent = '';
+  }
+  $('adminCancelEdit').addEventListener('click', () => { resetProductForm(); showAdminView('products'); });
+  function editProduct(id) {
+    const p = products.find(x => String(x.id) === String(id)); if (!p) return;
+    editingProductId = String(id); $('adminProductId').value = String(id);
+    $('adminName').value = p.name || ''; $('adminCategory').value = p.category || 'Sarees';
+    $('adminPrice').value = p.price ?? ''; $('adminOldPrice').value = p.oldPrice ?? '';
+    $('adminTag').value = p.tag || ''; $('adminImage').value = p.image || '';
+    $('adminSizes').value = (p.sizes || []).join(', '); $('adminColors').value = (p.colors || []).join(', ');
+    $('adminDescription').value = p.description || ''; $('adminFeatured').checked = !!p.featured;
+    $('adminFormTitle').textContent = 'Edit Product'; $('adminSaveProduct').textContent = 'Update Product';
+    showAdminView('add');
+  }
+  $('adminProductForm').addEventListener('submit', async e => {
+    e.preventDefault(); if (!isOwner()) { $('adminFormStatus').textContent = 'Please sign in with the owner account.'; return; }
+    const save = $('adminSaveProduct'); save.disabled = true; $('adminFormStatus').textContent = 'Saving product...';
+    const data = {
+      name: $('adminName').value.trim(), category: $('adminCategory').value,
+      price: Number($('adminPrice').value), oldPrice: Number($('adminOldPrice').value || 0),
+      tag: $('adminTag').value.trim() || 'NEW', image: $('adminImage').value.trim(),
+      sizes: $('adminSizes').value.split(',').map(x => x.trim()).filter(Boolean),
+      colors: $('adminColors').value.split(',').map(x => x.trim()).filter(Boolean),
+      description: $('adminDescription').value.trim(), featured: $('adminFeatured').checked
+    };
+    try {
+      const id = editingProductId || String(Date.now());
+      await setDoc(doc(db, 'products', id), data);
+      const index = products.findIndex(p => String(p.id) === id);
+      if (index >= 0) products[index] = { ...data, id }; else products.push({ ...data, id });
+      renderProducts(); updateStats(); resetProductForm(); showAdminView('products');
+      $('adminProductsStatus').textContent = 'Product saved successfully.';
+    } catch (error) { console.error(error); $('adminFormStatus').textContent = error.message || 'Could not save product. Check Firestore rules.'; }
+    finally { save.disabled = false; }
   });
+  async function removeProduct(id) {
+    if (!isOwner() || !confirm('Delete this product from the store?')) return;
+    try { await deleteDoc(doc(db, 'products', String(id))); products = products.filter(p => String(p.id) !== String(id)); renderProducts(); updateStats(); renderAdminProducts(); $('adminProductsStatus').textContent = 'Product deleted.'; }
+    catch (error) { console.error(error); $('adminProductsStatus').textContent = error.message || 'Could not delete product.'; }
+  }
 </script>
 
 </body>
