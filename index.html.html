@@ -795,31 +795,7 @@ button { cursor: pointer; }
     <p>Find your perfect style from our latest collections.</p>
   </div>
 
-  <div class="categories">
-    <div class="category" onclick="selectCategory('Sarees')">
-      <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&q=80" alt="Saree">
-      <h3>Sarees</h3>
-      <p>Traditional & Elegant</p>
-    </div>
-
-    <div class="category" onclick="selectCategory('Kurtis')">
-      <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&q=80" alt="Kurti">
-      <h3>Kurtis</h3>
-      <p>Everyday Fashion</p>
-    </div>
-
-    <div class="category" onclick="selectCategory('Suits')">
-      <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&q=80" alt="Suits">
-      <h3>Suits</h3>
-      <p>Graceful Designs</p>
-    </div>
-
-    <div class="category" onclick="selectCategory('Menswear')">
-      <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&q=80" alt="Menswear">
-      <h3>Menswear</h3>
-      <p>Classic & Modern</p>
-    </div>
-  </div>
+  <div class="categories" id="categoryCards"></div>
 </section>
 
 <section class="shop-section" id="shop">
@@ -830,12 +806,8 @@ button { cursor: pointer; }
   </div>
 
   <div class="shop-toolbar">
-    <div class="filters">
+    <div class="filters" id="categoryFilters">
       <button class="filter-btn active" data-category="All">All Products</button>
-      <button class="filter-btn" data-category="Sarees">Sarees</button>
-      <button class="filter-btn" data-category="Kurtis">Kurtis</button>
-      <button class="filter-btn" data-category="Suits">Suits</button>
-      <button class="filter-btn" data-category="Menswear">Menswear</button>
     </div>
 
     <select class="sort-select" id="sortSelect">
@@ -915,6 +887,7 @@ button { cursor: pointer; }
       <button class="admin-nav active" data-admin-view="overview">▦ &nbsp; Overview</button>
       <button class="admin-nav" data-admin-view="products">▣ &nbsp; Products</button>
       <button class="admin-nav" data-admin-view="add">＋ &nbsp; Add Product</button>
+      <button class="admin-nav" data-admin-view="categories">▤ &nbsp; Categories</button>
     </aside>
     <main class="admin-main">
       <section id="adminOverview">
@@ -925,6 +898,27 @@ button { cursor: pointer; }
       <section id="adminProductsView" hidden>
         <div class="admin-heading"><div><h1>Products</h1><p class="admin-muted">Manage the products shown on your website.</p></div><button class="admin-primary" type="button" data-admin-go="add">＋ Add Product</button></div>
         <div class="admin-card"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="adminProductRows"></tbody></table></div><div class="admin-status" id="adminProductsStatus"></div></div>
+      </section>
+      <section id="adminCategoriesView" hidden>
+        <div class="admin-heading">
+          <div><h1>Categories</h1><p class="admin-muted">Create categories and manage products inside them.</p></div>
+        </div>
+        <div class="admin-card">
+          <h3>Add New Category</h3>
+          <form id="adminCategoryForm">
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="newCategoryName">Category name *</label><input id="newCategoryName" maxlength="40" required placeholder="e.g. Lehenga"></div>
+              <div class="admin-field"><label for="newCategoryDescription">Short description</label><input id="newCategoryDescription" maxlength="70" placeholder="e.g. Festive & traditional"></div>
+            </div>
+            <div class="admin-form-actions"><button class="admin-primary" id="saveCategoryButton" type="submit">＋ Add Category</button></div>
+            <div class="admin-status" id="categoryFormStatus" aria-live="polite"></div>
+          </form>
+        </div>
+        <div class="admin-card" style="margin-top:16px">
+          <h3>Existing Categories</h3>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Category</th><th>Products</th><th>Actions</th></tr></thead><tbody id="adminCategoryRows"></tbody></table></div>
+          <div class="admin-status" id="adminCategoriesStatus" aria-live="polite"></div>
+        </div>
       </section>
       <section id="adminAddView" hidden>
         <div class="admin-heading"><div><h1 id="adminFormTitle">Add Product</h1><p class="admin-muted">Fill in the product details below.</p></div></div>
@@ -949,6 +943,21 @@ button { cursor: pointer; }
         </div>
       </section>
     </main>
+  </div>
+</div>
+
+<!-- CATEGORY DELETE / MOVE PRODUCTS DIALOG -->
+<div class="modal" id="categoryMoveModal">
+  <div class="admin-card" style="width:min(440px,100%);position:relative;padding:26px">
+    <button class="close-modal" type="button" id="closeCategoryMove" aria-label="Close">×</button>
+    <h2 style="font:24px 'Playfair Display',serif;margin-bottom:10px">Delete Category</h2>
+    <p id="categoryMoveMessage" style="font-size:13px;color:#817873;line-height:1.6;margin-bottom:16px"></p>
+    <div class="admin-field"><label for="moveProductsTo">Move its products to *</label><select id="moveProductsTo"></select></div>
+    <div class="admin-form-actions">
+      <button class="admin-danger" type="button" id="confirmCategoryDelete">Move Products & Delete Category</button>
+      <button class="admin-secondary" type="button" id="cancelCategoryDelete">Cancel</button>
+    </div>
+    <div class="admin-status" id="categoryMoveStatus" aria-live="polite"></div>
   </div>
 </div>
 
@@ -1238,7 +1247,7 @@ renderProducts();
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
-  import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC4cLEhojC6jiJGlT6XxTKvYG0el_IVdiM",
@@ -1261,6 +1270,47 @@ renderProducts();
   const loginButton = $('googleLoginButton'), panel = $('adminAccountPanel');
   const dashboard = $('adminDashboard');
   let editingProductId = null;
+  let categories = [
+    { id: 'sarees', name: 'Sarees', description: 'Traditional & Elegant', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&q=80' },
+    { id: 'kurtis', name: 'Kurtis', description: 'Everyday Fashion', image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&q=80' },
+    { id: 'suits', name: 'Suits', description: 'Graceful Designs', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&q=80' },
+    { id: 'menswear', name: 'Menswear', description: 'Classic & Modern', image: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&q=80' }
+  ];
+  let categoryPendingDelete = null;
+  const defaultCategoryImages = {
+    sarees: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&q=80',
+    kurtis: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&q=80',
+    suits: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&q=80',
+    menswear: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&q=80'
+  };
+  function categoryId(name) {
+    return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  function categoryImage(category) {
+    const existing = products.find(p => String(p.category).toLowerCase() === category.name.toLowerCase() && p.image);
+    return category.image || (existing && existing.image) || defaultCategoryImages[category.id] || defaultCategoryImages.sarees;
+  }
+  function renderCategoryUI() {
+    const cards = $('categoryCards');
+    const filters = $('categoryFilters');
+    if (cards) cards.innerHTML = categories.map(c => `
+      <div class="category" data-public-category="${escapeHtml(c.name)}">
+        <img src="${escapeHtml(categoryImage(c))}" alt="${escapeHtml(c.name)}">
+        <h3>${escapeHtml(c.name)}</h3>
+        <p>${escapeHtml(c.description || 'Explore our collection')}</p>
+      </div>`).join('');
+    if (filters) filters.innerHTML = `<button class="filter-btn ${activeCategory === 'All' ? 'active' : ''}" data-category="All">All Products</button>` +
+      categories.map(c => `<button class="filter-btn ${activeCategory === c.name ? 'active' : ''}" data-category="${escapeHtml(c.name)}">${escapeHtml(c.name)}</button>`).join('');
+    filters?.querySelectorAll('[data-category]').forEach(b => b.addEventListener('click', () => selectCategory(b.dataset.category)));
+    cards?.querySelectorAll('[data-public-category]').forEach(c => c.addEventListener('click', () => selectCategory(c.dataset.publicCategory)));
+    if (!categories.some(c => c.name === activeCategory)) activeCategory = 'All';
+    filters?.querySelectorAll('[data-category]').forEach(b => b.classList.toggle('active', b.dataset.category === activeCategory));
+    if (typeof renderProducts === 'function') renderProducts();
+  }
+
+  // Render the original category filter row immediately, even before Firestore responds.
+  // This keeps the category buttons visible if the network is slow or rules need updating.
+  renderCategoryUI();
 
   function isOwner(user = auth.currentUser) {
     return !!user && (user.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase();
@@ -1270,7 +1320,7 @@ renderProducts();
     panel.classList.remove('show');
     dashboard.classList.add('show');
     document.body.style.overflow = 'hidden';
-    try { await loadProductsFromFirebase(true); } catch (error) { console.error(error); $('adminProductsStatus').textContent = error.message || 'Could not load products. Check Firestore rules.'; }
+    try { await loadProductsFromFirebase(true); await loadCategoriesFromFirebase(true); } catch (error) { console.error(error); $('adminProductsStatus').textContent = error.message || 'Could not load store data. Check Firestore rules.'; }
     refreshAdmin();
   }
   function closeDashboard() {
@@ -1328,20 +1378,43 @@ renderProducts();
     $('adminProductsStatus').textContent = 'Could not load Firestore products. Check your Firestore rules and database setup.';
   });
 
+  async function loadCategoriesFromFirebase(seedIfEmpty = false) {
+    const snap = await getDocs(collection(db, 'categories'));
+    if (snap.empty && seedIfEmpty) {
+      for (const item of categories) {
+        await setDoc(doc(db, 'categories', item.id), item);
+      }
+      return loadCategoriesFromFirebase(false);
+    }
+    if (!snap.empty) {
+      categories = snap.docs.map(d => ({ ...d.data(), id: d.id })).sort((a,b) => a.name.localeCompare(b.name));
+    }
+    renderCategoryUI();
+    renderAdminCategories();
+    updateStats();
+  }
+  loadCategoriesFromFirebase().catch(error => {
+    console.error('Categories load failed:', error);
+    // Keep the default category chips visible if Firestore denies the category read.
+    renderCategoryUI();
+  });
+
   function showAdminView(view) {
     $('adminOverview').hidden = view !== 'overview';
     $('adminProductsView').hidden = view !== 'products';
     $('adminAddView').hidden = view !== 'add';
+    $('adminCategoriesView').hidden = view !== 'categories';
     document.querySelectorAll('.admin-nav').forEach(b => b.classList.toggle('active', b.dataset.adminView === view));
     if (view === 'products') renderAdminProducts();
     if (view === 'overview') updateStats();
+    if (view === 'categories') renderAdminCategories();
   }
   document.querySelectorAll('[data-admin-view]').forEach(b => b.addEventListener('click', () => showAdminView(b.dataset.adminView)));
   document.querySelectorAll('[data-admin-go]').forEach(b => b.addEventListener('click', () => { resetProductForm(); showAdminView(b.dataset.adminGo); }));
   function updateStats() {
     $('adminTotalProducts').textContent = products.length;
     $('adminFeaturedProducts').textContent = products.filter(p => p.featured).length;
-    $('adminCategoryCount').textContent = new Set(products.map(p => p.category)).size;
+    $('adminCategoryCount').textContent = categories.length;
   }
   function refreshAdmin() { updateStats(); renderAdminProducts(); showAdminView('overview'); }
   function renderAdminProducts() {
@@ -1352,14 +1425,125 @@ renderProducts();
     body.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => removeProduct(b.dataset.delete)));
   }
   function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function resetProductForm() {
-    $('adminProductForm').reset(); $('adminProductId').value = ''; editingProductId = null;
+  function populateProductCategorySelect(selected = '') {
+    const select = $('adminCategory');
+    const names = categories.map(c => c.name);
+    if (selected && !names.some(n => n.toLowerCase() === selected.toLowerCase())) {
+      select.innerHTML = `<option value="${escapeHtml(selected)}">${escapeHtml(selected)}</option>` + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    } else {
+      select.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    }
+    if (selected) select.value = selected;
+  }
+  function renderAdminCategories() {
+    const body = $('adminCategoryRows');
+    if (!body) return;
+    if (!categories.length) {
+      body.innerHTML = '<tr><td colspan="3" class="admin-empty">No categories yet. Add your first category above.</td></tr>';
+      return;
+    }
+    body.innerHTML = categories.map(c => {
+      const count = products.filter(p => String(p.category).toLowerCase() === c.name.toLowerCase()).length;
+      return `<tr><td><strong>${escapeHtml(c.name)}</strong></td><td>${count}</td><td><button class="admin-danger" type="button" data-category-delete="${escapeHtml(c.id)}">Delete</button></td></tr>`;
+    }).join('');
+    body.querySelectorAll('[data-category-delete]').forEach(b => b.addEventListener('click', () => beginDeleteCategory(b.dataset.categoryDelete)));
+  }
+  $('adminCategoryForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!isOwner()) return;
+    const name = $('newCategoryName').value.trim();
+    const description = $('newCategoryDescription').value.trim();
+    if (!name) return;
+    if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+      $('categoryFormStatus').textContent = 'This category already exists.';
+      return;
+    }
+    const id = categoryId(name);
+    if (!id) { $('categoryFormStatus').textContent = 'Please enter a valid category name.'; return; }
+    const button = $('saveCategoryButton');
+    button.disabled = true;
+    $('categoryFormStatus').textContent = 'Adding category...';
+    try {
+      const category = { id, name, description: description || 'Explore our collection', image: '' };
+      await setDoc(doc(db, 'categories', id), category);
+      categories.push(category);
+      categories.sort((a,b) => a.name.localeCompare(b.name));
+      $('adminCategoryForm').reset();
+      $('categoryFormStatus').textContent = 'Category added successfully.';
+      renderCategoryUI(); renderAdminCategories(); updateStats(); populateProductCategorySelect();
+    } catch (error) {
+      console.error(error);
+      $('categoryFormStatus').textContent = error.message || 'Could not add category.';
+    } finally { button.disabled = false; }
+  });
+
+  function beginDeleteCategory(id) {
+    const category = categories.find(c => c.id === id);
+    if (!category) return;
+    const count = products.filter(p => String(p.category).toLowerCase() === category.name.toLowerCase()).length;
+    if (count === 0) {
+      if (!confirm(`Delete the "${category.name}" category?`)) return;
+      deleteCategoryAndMove(category, '');
+      return;
+    }
+    const targets = categories.filter(c => c.id !== id);
+    if (!targets.length) {
+      $('adminCategoriesStatus').textContent = 'Add another category before deleting this one because it contains products.';
+      return;
+    }
+    categoryPendingDelete = category;
+    $('categoryMoveMessage').textContent = `"${category.name}" contains ${count} product(s). Choose another category. All products will be moved before this category is deleted.`;
+    $('moveProductsTo').innerHTML = targets.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+    $('categoryMoveStatus').textContent = '';
+    $('confirmCategoryDelete').disabled = false;
+    $('categoryMoveModal').classList.add('show');
+  }
+  function closeCategoryMove() {
+    $('categoryMoveModal').classList.remove('show');
+    categoryPendingDelete = null;
+  }
+  $('closeCategoryMove').addEventListener('click', closeCategoryMove);
+  $('cancelCategoryDelete').addEventListener('click', closeCategoryMove);
+  $('confirmCategoryDelete').addEventListener('click', async () => {
+    if (!categoryPendingDelete || !isOwner()) return;
+    const targetName = $('moveProductsTo').value;
+    if (!targetName) return;
+    $('confirmCategoryDelete').disabled = true;
+    $('categoryMoveStatus').textContent = 'Moving products and deleting category...';
+    try {
+      await deleteCategoryAndMove(categoryPendingDelete, targetName);
+      closeCategoryMove();
+    } catch (error) {
+      console.error(error);
+      $('categoryMoveStatus').textContent = error.message || 'Could not move products. Category was not deleted.';
+      $('confirmCategoryDelete').disabled = false;
+    }
+  });
+  async function deleteCategoryAndMove(category, targetName) {
+    if (!isOwner()) throw new Error('Please sign in with the owner account.');
+    const affected = products.filter(p => String(p.category).toLowerCase() === category.name.toLowerCase());
+    if (affected.length && !targetName) throw new Error('Choose another category for these products.');
+    // Firestore batches allow up to 500 writes; process product updates in safe chunks.
+    for (let i = 0; i < affected.length; i += 450) {
+      const batch = writeBatch(db);
+      affected.slice(i, i + 450).forEach(p => batch.update(doc(db, 'products', String(p.id)), { category: targetName }));
+      await batch.commit();
+    }
+    await deleteDoc(doc(db, 'categories', category.id));
+    products = products.map(p => String(p.category).toLowerCase() === category.name.toLowerCase() ? { ...p, category: targetName } : p);
+    categories = categories.filter(c => c.id !== category.id);
+    if (activeCategory === category.name) activeCategory = 'All';
+    renderCategoryUI(); renderAdminCategories(); renderProducts(); updateStats(); renderAdminProducts();
+    $('adminCategoriesStatus').textContent = `Category "${category.name}" deleted. ${affected.length} product(s) moved to "${targetName || 'no category'}".`;
+    $('adminProductsStatus').textContent = 'Products updated after category deletion.';
+  }  function resetProductForm() {
+    $('adminProductForm').reset(); $('adminProductId').value = ''; editingProductId = null; populateProductCategorySelect();
     $('adminFormTitle').textContent = 'Add Product'; $('adminSaveProduct').textContent = 'Save Product'; $('adminFormStatus').textContent = '';
   }
   $('adminCancelEdit').addEventListener('click', () => { resetProductForm(); showAdminView('products'); });
   function editProduct(id) {
     const p = products.find(x => String(x.id) === String(id)); if (!p) return;
-    editingProductId = String(id); $('adminProductId').value = String(id);
+    editingProductId = String(id); $('adminProductId').value = String(id); populateProductCategorySelect(p.category || 'Sarees');
     $('adminName').value = p.name || ''; $('adminCategory').value = p.category || 'Sarees';
     $('adminPrice').value = p.price ?? ''; $('adminOldPrice').value = p.oldPrice ?? '';
     $('adminTag').value = p.tag || ''; $('adminImage').value = p.image || '';
@@ -1384,7 +1568,7 @@ renderProducts();
       await setDoc(doc(db, 'products', id), data);
       const index = products.findIndex(p => String(p.id) === id);
       if (index >= 0) products[index] = { ...data, id }; else products.push({ ...data, id });
-      renderProducts(); updateStats(); resetProductForm(); showAdminView('products');
+      renderProducts(); renderCategoryUI(); renderAdminCategories(); updateStats(); resetProductForm(); showAdminView('products');
       $('adminProductsStatus').textContent = 'Product saved successfully.';
     } catch (error) { console.error(error); $('adminFormStatus').textContent = error.message || 'Could not save product. Check Firestore rules.'; }
     finally { save.disabled = false; }
